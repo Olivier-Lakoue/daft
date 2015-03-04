@@ -98,7 +98,7 @@ class PGM(object):
             directed = self._ctx.directed
 
         e = Edge(self._nodes[name1], self._nodes[name2], directed=directed,
-                 plot_params=kwargs)
+                 **kwargs)
         self._edges.append(e)
 
         return e
@@ -318,11 +318,14 @@ class Edge(object):
         rendering.
 
     """
-    def __init__(self, node1, node2, directed=True, plot_params={}):
+    def __init__(self, node1, node2, directed=True, plot_params={},
+                 shrinkA=0.1, shrinkB=0.1):
         self.node1 = node1
         self.node2 = node2
         self.directed = directed
         self.plot_params = dict(plot_params)
+        self.shrinkA = shrinkA
+        self.shrinkB = shrinkB
 
     def _get_coords(self, ctx):
         """
@@ -357,11 +360,14 @@ class Edge(object):
         alpha2 = 0.5 * ctx.node_unit * self.node2.scale / dist2
 
         # Get the coordinates of the starting position.
-        x0, y0 = x1 + alpha1 * dx, y1 + alpha1 * dy
+        x0 = x1 + alpha1 * dx + self.shrinkA*dx/(abs(dx)+abs(dy))
+        y0 = y1 + alpha1 * dy + self.shrinkA*dy/(abs(dx)+abs(dy))
 
         # Get the width and height of the line.
         dx0 = dx * (1. - alpha1 - alpha2)
+        dx0 -= (self.shrinkA+self.shrinkB)*dx/(abs(dx)+abs(dy))
         dy0 = dy * (1. - alpha1 - alpha2)
+        dy0 -= (self.shrinkA+self.shrinkB)*dy/(abs(dx)+abs(dy))
 
         return x0, y0, dx0, dy0
 
